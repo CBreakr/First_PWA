@@ -9,3 +9,8 @@ self.addEventListener("activate", evt => {
     console.log("service worker activated");
     // what do we do here?
 });
+
+// fetch event
+self.addEventListener("fetch", evt => {
+    console.log("fetch intercepted", evt);
+});
