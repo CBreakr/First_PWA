@@ -1,5 +1,5 @@
 
-const staticCacheName = "site-static";
+const staticCacheName = "site-static-v1.0.0";
 
 // the http requests
 /*
@@ -40,7 +40,22 @@ self.addEventListener("install", evt => {
 
 self.addEventListener("activate", evt => {
     console.log("service worker activated");
-    // what do we do here?
+    
+    //remove the old caches
+    evt.waitUntil(
+        // we need to use Promise.all here so that we wait until
+        // all of the promises complete
+        caches.keys()
+        .then(keys => {
+            // each one will need to run asynchronously
+            return Promise.all(
+                keys
+                .filter(key => key != staticCacheName)
+                .map(key => caches.delete(key))
+            )
+        })
+        .catch(err => console.log("error removing old caches", err))
+    );
 });
 
 // fetch event
