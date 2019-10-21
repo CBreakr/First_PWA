@@ -1,5 +1,6 @@
 
 const staticCacheName = "site-static-v1.0.0";
+const dynamicCacheName = "site-dynamic-v1.0.0";
 
 // the http requests
 /*
@@ -50,7 +51,7 @@ self.addEventListener("activate", evt => {
             // each one will need to run asynchronously
             return Promise.all(
                 keys
-                .filter(key => key != staticCacheName)
+                .filter(key => key != staticCacheName && key != dynamicCacheName)
                 .map(key => caches.delete(key))
             )
         })
@@ -66,7 +67,20 @@ self.addEventListener("fetch", evt => {
         .then(cacheResponse => {
             // if the cache response is empty
             // then go back to the initial fetch
-            return cacheResponse || fetch(evt.request);
+            return cacheResponse 
+            || fetch(evt.request)
+            .then(res => { 
+                // dynamic caching
+                // this is useful for other pages 
+                // besides the main page shell
+                return caches.open(dynamicCacheName)
+                .then(cache => {
+                    // url and item (copy of it)
+                    cache.put(evt.request.url, res.clone());
+                    // return to the page
+                    return res;
+                });
+            });
         })
         .catch(err => console.log("error on cache match", err))
     );
