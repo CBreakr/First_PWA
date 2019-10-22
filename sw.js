@@ -2,6 +2,8 @@
 const staticCacheName = "site-static-v1.0.0";
 const dynamicCacheName = "site-dynamic-v1.0.0";
 
+const fallback = "/pages/fallback.html";
+
 // the http requests
 /*
     the last one was within the material icon's own css file,
@@ -10,6 +12,7 @@ const dynamicCacheName = "site-dynamic-v1.0.0";
 const assets = [
     "/",
     "/index.html",
+    fallback,
     "/js/app.js",
     "/js/ui.js",
     "/js/materialize.js",
@@ -82,6 +85,9 @@ self.addEventListener("fetch", evt => {
                 });
             });
         })
-        .catch(err => console.log("error on cache match", err))
+        .catch(err => {
+            console.log("error on cache match", err)
+            return caches.match(fallback);
+        })
     );
 });
