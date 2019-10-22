@@ -87,7 +87,11 @@ self.addEventListener("fetch", evt => {
         })
         .catch(err => {
             console.log("error on cache match", err)
-            return caches.match(fallback);
+            // only return the fallback page if the request
+            // was looking for a page, rather than an image
+            if(evt.request.url.indexOf(".html") >= 0) {
+                return caches.match(fallback);
+            }
         })
     );
 });
