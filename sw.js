@@ -4,6 +4,8 @@ const dynamicCacheName = "site-dynamic-v1.0.0";
 
 const fallback = "/pages/fallback.html";
 
+const cacheLimit = 10;
+
 // the http requests
 /*
     the last one was within the material icon's own css file,
@@ -19,11 +21,15 @@ const assets = [
     "/css/styles.css",
     "/css/materialize.css",
     "/images/dish.png",
+    "/manifest.json",
+    "/images/icons/icon-144x144.png",
     "https://fonts.googleapis.com/icon?family=Material+Icons",
     "https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2"
 ];
 
-
+//
+//
+//
 self.addEventListener("install", evt => {
     console.log("service worker is being installed");
     
@@ -42,6 +48,9 @@ self.addEventListener("install", evt => {
     );
 });
 
+//
+//
+//
 self.addEventListener("activate", evt => {
     console.log("service worker activated");
     
@@ -62,7 +71,9 @@ self.addEventListener("activate", evt => {
     );
 });
 
+//
 // fetch event
+//
 self.addEventListener("fetch", evt => {
     // console.log("fetch intercepted", evt);
     evt.respondWith(
@@ -80,6 +91,8 @@ self.addEventListener("fetch", evt => {
                 .then(cache => {
                     // url and item (copy of it)
                     cache.put(evt.request.url, res.clone());
+                    // cycle old cache items
+                    limitCacheSize(dynamicCacheName);
                     // return to the page
                     return res;
                 });
@@ -95,3 +108,28 @@ self.addEventListener("fetch", evt => {
         })
     );
 });
+
+//
+//
+//
+const limitCacheSize = (name) => {
+    caches.open(name)
+    .then(cache => {
+        removeFirstCacheElement(cache);
+    })
+    .catch(err => console.log("error limited cache size", err));
+}
+
+//
+//
+//
+function removeFirstCacheElement(cache){
+    cache.keys()
+    .then(keys => {
+        if(keys.length > cacheLimit){
+            console.log(`remove element from cache ${cache}`, keys[0]);
+            cache.delete(keys[0])
+            .then(removeFirstCacheElement(cache));
+        }
+    });
+}
